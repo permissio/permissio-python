@@ -1,6 +1,6 @@
-# Permis.io Python SDK
+# Permissio.io Python SDK
 
-Official Python SDK for the [Permis.io](https://permis.io) authorization platform.
+Official Python SDK for the [Permissio.io](https://permissio.io) authorization platform.
 
 ## Installation
 
@@ -11,17 +11,17 @@ pip install permisio
 ## Quick Start
 
 ```python
-from permisio import Permis
+from permissio import Permissio
 
 # Initialize the client
-permis = Permis(
+permissio = Permissio(
     token="permis_key_your_api_key",
     project_id="your-project-id",
     environment_id="your-environment-id",
 )
 
 # Check permission
-if permis.check("user@example.com", "read", "document"):
+if permissio.check("user@example.com", "read", "document"):
     print("Access granted!")
 else:
     print("Access denied!")
@@ -32,22 +32,22 @@ else:
 For synchronous-first usage (similar to Permit.io SDK):
 
 ```python
-from permisio.sync import Permis
+from permissio.sync import Permissio
 
-permis = Permis(
+permissio = Permissio(
     token="permis_key_your_api_key",
     project_id="your-project-id",
     environment_id="your-environment-id",
 )
 
 # Simple permission check
-allowed = permis.check("user@example.com", "read", "document")
+allowed = permissio.check("user@example.com", "read", "document")
 
 # Check with tenant
-allowed = permis.check("user@example.com", "read", "document", tenant="acme-corp")
+allowed = permissio.check("user@example.com", "read", "document", tenant="acme-corp")
 
 # Check with resource instance
-allowed = permis.check(
+allowed = permissio.check(
     "user@example.com",
     "read",
     {"type": "document", "key": "doc-123"}
@@ -60,20 +60,20 @@ For async applications:
 
 ```python
 import asyncio
-from permisio import Permis
+from permissio import Permissio
 
 async def main():
-    permis = Permis(
+    permissio = Permissio(
         token="permis_key_your_api_key",
         project_id="your-project-id",
         environment_id="your-environment-id",
     )
 
     # Async permission check
-    allowed = await permis.check_async("user@example.com", "read", "document")
+    allowed = await permissio.check_async("user@example.com", "read", "document")
     
     # Close the client when done
-    await permis.close_async()
+    await permissio.close_async()
 
 asyncio.run(main())
 ```
@@ -81,10 +81,10 @@ asyncio.run(main())
 ## ABAC (Attribute-Based Access Control)
 
 ```python
-from permisio import Permis
-from permisio.enforcement import UserBuilder, ResourceBuilder
+from permissio import Permissio
+from permissio.enforcement import UserBuilder, ResourceBuilder
 
-permis = Permis(token="permis_key_your_api_key")
+permissio = Permissio(token="permis_key_your_api_key")
 
 # Build user with attributes
 user = (
@@ -104,7 +104,7 @@ resource = (
 )
 
 # Check with ABAC
-allowed = permis.check(user, "read", resource)
+allowed = permissio.check(user, "read", resource)
 ```
 
 ## API Usage
@@ -112,16 +112,16 @@ allowed = permis.check(user, "read", resource)
 ### Users
 
 ```python
-from permisio.models import UserCreate, UserUpdate
+from permissio.models import UserCreate, UserUpdate
 
 # List users
-users = permis.api.users.list(page=1, per_page=10)
+users = permissio.api.users.list(page=1, per_page=10)
 
 # Get a user
-user = permis.api.users.get("user@example.com")
+user = permissio.api.users.get("user@example.com")
 
 # Create a user
-new_user = permis.api.users.create(UserCreate(
+new_user = permissio.api.users.create(UserCreate(
     key="new.user@example.com",
     email="new.user@example.com",
     first_name="New",
@@ -129,42 +129,42 @@ new_user = permis.api.users.create(UserCreate(
 ))
 
 # Update a user
-updated_user = permis.api.users.update("user@example.com", UserUpdate(
+updated_user = permissio.api.users.update("user@example.com", UserUpdate(
     first_name="Updated"
 ))
 
 # Delete a user
-permis.api.users.delete("user@example.com")
+permissio.api.users.delete("user@example.com")
 ```
 
 ### Tenants
 
 ```python
-from permisio.models import TenantCreate
+from permissio.models import TenantCreate
 
 # List tenants
-tenants = permis.api.tenants.list()
+tenants = permissio.api.tenants.list()
 
 # Create a tenant
-tenant = permis.api.tenants.create(TenantCreate(
+tenant = permissio.api.tenants.create(TenantCreate(
     key="acme-corp",
     name="Acme Corporation",
 ))
 
 # Get a tenant
-tenant = permis.api.tenants.get("acme-corp")
+tenant = permissio.api.tenants.get("acme-corp")
 ```
 
 ### Roles
 
 ```python
-from permisio.models import RoleCreate
+from permissio.models import RoleCreate
 
 # List roles
-roles = permis.api.roles.list()
+roles = permissio.api.roles.list()
 
 # Create a role
-role = permis.api.roles.create(RoleCreate(
+role = permissio.api.roles.create(RoleCreate(
     key="editor",
     name="Editor",
     permissions=["document:read", "document:write"],
@@ -175,29 +175,29 @@ role = permis.api.roles.create(RoleCreate(
 
 ```python
 # Assign a role to a user
-permis.api.role_assignments.assign(
+permissio.api.role_assignments.assign(
     user="user@example.com",
     role="editor",
     tenant="acme-corp",
 )
 
 # Or use convenience method
-permis.assign_role("user@example.com", "editor", tenant="acme-corp")
+permissio.assign_role("user@example.com", "editor", tenant="acme-corp")
 
 # Unassign a role
-permis.unassign_role("user@example.com", "editor", tenant="acme-corp")
+permissio.unassign_role("user@example.com", "editor", tenant="acme-corp")
 
 # List role assignments
-assignments = permis.api.role_assignments.list(user="user@example.com")
+assignments = permissio.api.role_assignments.list(user="user@example.com")
 ```
 
 ### Resources
 
 ```python
-from permisio.models import ResourceCreate, ResourceAction
+from permissio.models import ResourceCreate, ResourceAction
 
 # Create a resource type
-resource = permis.api.resources.create(ResourceCreate(
+resource = permissio.api.resources.create(ResourceCreate(
     key="document",
     name="Document",
     actions=[
@@ -208,7 +208,7 @@ resource = permis.api.resources.create(ResourceCreate(
 ))
 
 # List resources
-resources = permis.api.resources.list()
+resources = permissio.api.resources.list()
 ```
 
 ## Configuration
@@ -216,20 +216,20 @@ resources = permis.api.resources.list()
 ### Using ConfigBuilder
 
 ```python
-from permisio import ConfigBuilder
+from permissio import ConfigBuilder
 
 config = (
     ConfigBuilder("permis_key_your_api_key")
     .with_project_id("your-project-id")
     .with_environment_id("your-environment-id")
-    .with_api_url("https://api.permis.io")
+    .with_api_url("https://api.permissio.io")
     .with_timeout(30.0)
     .with_retry_attempts(3)
     .with_debug(True)
     .build()
 )
 
-permis = Permis(config=config)
+permissio = Permissio(config=config)
 ```
 
 ### Configuration Options
@@ -237,7 +237,7 @@ permis = Permis(config=config)
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `token` | str | (required) | API key starting with `permis_key_` |
-| `api_url` | str | `https://api.permis.io` | Base API URL |
+| `api_url` | str | `https://api.permissio.io` | Base API URL |
 | `project_id` | str | None | Project identifier |
 | `environment_id` | str | None | Environment identifier |
 | `timeout` | float | 30.0 | Request timeout in seconds |
@@ -249,7 +249,7 @@ permis = Permis(config=config)
 ## Error Handling
 
 ```python
-from permisio.errors import (
+from permissio.errors import (
     PermisError,
     PermisApiError,
     PermisNotFoundError,
@@ -257,7 +257,7 @@ from permisio.errors import (
 )
 
 try:
-    user = permis.api.users.get("nonexistent@example.com")
+    user = permissio.api.users.get("nonexistent@example.com")
 except PermisNotFoundError as e:
     print(f"User not found: {e.message}")
 except PermisAuthenticationError as e:
@@ -273,21 +273,21 @@ except PermisError as e:
 ```python
 # Automatically closes the client
 with Permis(token="permis_key_your_api_key") as permis:
-    allowed = permis.check("user@example.com", "read", "document")
+    allowed = permissio.check("user@example.com", "read", "document")
 
 # Async context manager
 async with Permis(token="permis_key_your_api_key") as permis:
-    allowed = await permis.check_async("user@example.com", "read", "document")
+    allowed = await permissio.check_async("user@example.com", "read", "document")
 ```
 
 ## Flask Integration
 
 ```python
 from flask import Flask, g, request
-from permisio import Permis
+from permissio import Permissio
 
 app = Flask(__name__)
-permis = Permis(
+permissio = Permissio(
     token="permis_key_your_api_key",
     project_id="your-project-id",
     environment_id="your-environment-id",
@@ -298,7 +298,7 @@ def require_permission(action: str, resource: str):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             user_id = g.user.id  # Get from your auth system
-            if not permis.check(user_id, action, resource):
+            if not permissio.check(user_id, action, resource):
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function
@@ -321,4 +321,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Documentation
 
-Full documentation is available at [docs.permis.io/sdk/python](https://docs.permis.io/sdk/python).
+Full documentation is available at [docs.permissio.io/sdk/python](https://docs.permissio.io/sdk/python).

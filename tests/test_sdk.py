@@ -1,34 +1,34 @@
 """
-Unit tests for the Permis.io Python SDK.
+Unit tests for the Permissio.io Python SDK.
 
 Run with: pytest tests/ -v
 """
 
 import pytest
-from permisio import Permis, PermisConfig, ConfigBuilder
-from permisio.errors import (
-    PermisError,
-    PermisApiError,
-    PermisValidationError,
-    PermisAuthenticationError,
+from permissio import Permissio, PermissioConfig, ConfigBuilder
+from permissio.errors import (
+    PermissioError,
+    PermissioApiError,
+    PermissioValidationError,
+    PermissioAuthenticationError,
 )
-from permisio.enforcement import UserBuilder, ResourceBuilder, ContextBuilder
+from permissio.enforcement import UserBuilder, ResourceBuilder, ContextBuilder
 
 
 class TestConfig:
     """Tests for configuration."""
     
     def test_permis_config_defaults(self):
-        config = PermisConfig(token="test_token")
+        config = PermissioConfig(token="test_token")
         assert config.token == "test_token"
-        assert config.api_url == "https://api.permis.io"
+        assert config.api_url == "https://api.permissio.io"
         assert config.project_id is None  # Default is None, set during ConfigBuilder
         assert config.environment_id is None
         assert config.timeout == 30.0
         assert config.debug is False
     
     def test_permis_config_custom_values(self):
-        config = PermisConfig(
+        config = PermissioConfig(
             token="test_token",
             api_url="http://localhost:8080",
             project_id="my-project",
@@ -79,21 +79,21 @@ class TestClient:
     """Tests for client initialization."""
     
     def test_client_init_with_token(self):
-        client = Permis(token="test_token")
+        client = Permissio(token="test_token")
         assert client.config.token == "test_token"
         client.close()
     
     def test_client_init_with_config(self):
-        config = PermisConfig(
+        config = PermissioConfig(
             token="test_token",
             project_id="my-project",
         )
-        client = Permis(config=config)
+        client = Permissio(config=config)
         assert client.config.project_id == "my-project"
         client.close()
     
     def test_client_init_with_kwargs(self):
-        client = Permis(
+        client = Permissio(
             token="test_token",
             project_id="custom-project",
             environment_id="production",
@@ -103,11 +103,11 @@ class TestClient:
         client.close()
     
     def test_client_requires_token(self):
-        with pytest.raises(ValueError):  # Raises ValueError, not PermisValidationError
-            Permis()
+        with pytest.raises(ValueError):  # Raises ValueError, not PermissioValidationError
+            Permissio()
     
     def test_client_api_property(self):
-        client = Permis(token="test_token")
+        client = Permissio(token="test_token")
         assert client.api is not None
         assert client.api.users is not None
         assert client.api.tenants is not None
@@ -181,13 +181,13 @@ class TestErrors:
     """Tests for error handling."""
     
     def test_permis_error_hierarchy(self):
-        assert issubclass(PermisApiError, PermisError)
-        assert issubclass(PermisValidationError, PermisError)
-        assert issubclass(PermisAuthenticationError, PermisApiError)
+        assert issubclass(PermissioApiError, PermissioError)
+        assert issubclass(PermissioValidationError, PermissioError)
+        assert issubclass(PermissioAuthenticationError, PermissioApiError)
     
     def test_permis_api_error(self):
-        # PermisApiError uses 'code' not 'error_code'
-        error = PermisApiError(
+        # PermissioApiError uses 'code' not 'error_code'
+        error = PermissioApiError(
             message="Not found",
             status_code=404,
             code="RESOURCE_NOT_FOUND",
@@ -199,7 +199,7 @@ class TestErrors:
         assert "Not found" in str(error)
     
     def test_permis_validation_error(self):
-        error = PermisValidationError(
+        error = PermissioValidationError(
             message="Invalid input",
             field="email",
         )
@@ -212,7 +212,7 @@ class TestModels:
     """Tests for data models."""
     
     def test_user_create(self):
-        from permisio.models import UserCreate
+        from permissio.models import UserCreate
         
         user = UserCreate(
             key="user@example.com",
@@ -228,7 +228,7 @@ class TestModels:
         assert user.attributes["department"] == "sales"
     
     def test_tenant_create(self):
-        from permisio.models import TenantCreate
+        from permissio.models import TenantCreate
         
         tenant = TenantCreate(
             key="acme-corp",
@@ -240,7 +240,7 @@ class TestModels:
         assert tenant.name == "Acme Corporation"
     
     def test_role_create(self):
-        from permisio.models import RoleCreate
+        from permissio.models import RoleCreate
         
         role = RoleCreate(
             key="editor",
@@ -256,14 +256,14 @@ class TestNormalizeFunctions:
     """Tests for input normalization."""
     
     def test_normalize_user_string(self):
-        from permisio.enforcement.models import normalize_user
+        from permissio.enforcement.models import normalize_user
         
         # normalize_user returns a dict, not CheckUser
         result = normalize_user("user@example.com")
         assert result["key"] == "user@example.com"
     
     def test_normalize_user_dict(self):
-        from permisio.enforcement.models import normalize_user
+        from permissio.enforcement.models import normalize_user
         
         result = normalize_user({
             "key": "user@example.com",
@@ -273,7 +273,7 @@ class TestNormalizeFunctions:
         assert result["attributes"]["level"] == 5
     
     def test_normalize_user_object(self):
-        from permisio.enforcement.models import normalize_user, CheckUser
+        from permissio.enforcement.models import normalize_user, CheckUser
         
         user = CheckUser(key="user@example.com", attributes={})
         result = normalize_user(user)
@@ -281,13 +281,13 @@ class TestNormalizeFunctions:
         assert result["key"] == "user@example.com"
     
     def test_normalize_resource_string(self):
-        from permisio.enforcement.models import normalize_resource
+        from permissio.enforcement.models import normalize_resource
         
         result = normalize_resource("document")
         assert result["type"] == "document"
     
     def test_normalize_resource_dict(self):
-        from permisio.enforcement.models import normalize_resource
+        from permissio.enforcement.models import normalize_resource
         
         result = normalize_resource({
             "type": "document",

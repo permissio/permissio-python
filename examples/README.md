@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains example code demonstrating how to use the Permis.io Python SDK.
+This directory contains example code demonstrating how to use the Permissio.io Python SDK.
 
 ## Examples
 

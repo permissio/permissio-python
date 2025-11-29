@@ -1,6 +1,6 @@
-# Contributing to Permis.io Python SDK
+# Contributing to Permissio.io Python SDK
 
-Thank you for your interest in contributing to the Permis.io Python SDK! This document provides guidelines and steps for contributing.
+Thank you for your interest in contributing to the Permissio.io Python SDK! This document provides guidelines and steps for contributing.
 
 ## Code of Conduct
 

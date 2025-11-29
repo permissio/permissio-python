@@ -1,8 +1,8 @@
 """
-Flask integration example for the Permis.io Python SDK.
+Flask integration example for the Permissio.io Python SDK.
 
 This example demonstrates:
-- Integrating Permis.io with Flask
+- Integrating Permissio.io with Flask
 - Creating permission decorators
 - Middleware for permission checking
 - Async support with Flask-Async
@@ -13,8 +13,8 @@ from typing import Optional, Callable, Any
 
 from flask import Flask, g, request, jsonify, abort
 
-from permisio import Permis
-from permisio.errors import PermisApiError, PermisNotFoundError
+from permissio import Permissio
+from permissio.errors import PermissioApiError, PermissioNotFoundError
 
 
 # ============================================================================
@@ -23,9 +23,9 @@ from permisio.errors import PermisApiError, PermisNotFoundError
 
 app = Flask(__name__)
 
-# Initialize Permis.io client
+# Initialize Permissio.io client
 # In production, load these from environment variables
-permis = Permis(
+permissio = Permissio(
     token="permis_key_your_api_key_here",
     project_id="my-project",
     environment_id="production",
@@ -99,7 +99,7 @@ def require_permission(action: str, resource: str, get_resource_key: Optional[Ca
                 resource_data["tenant"] = g.user["tenant"]
             
             # Check permission
-            allowed = permis.check(g.user_id, action, resource_data)
+            allowed = permissio.check(g.user_id, action, resource_data)
             
             if not allowed:
                 abort(403, description=f"Permission denied: {action} on {resource}")
@@ -134,7 +134,7 @@ def require_any_permission(*permissions):
                 if g.user and g.user.get("tenant"):
                     resource_data["tenant"] = g.user["tenant"]
                 
-                if permis.check(g.user_id, action, resource_data):
+                if permissio.check(g.user_id, action, resource_data):
                     return f(*args, **kwargs)
             
             abort(403, description="Permission denied")
@@ -169,7 +169,7 @@ def require_all_permissions(*permissions):
                 })
             
             # Bulk check
-            results = permis.bulk_check(checks)
+            results = permissio.bulk_check(checks)
             
             if not results.all_allowed():
                 abort(403, description="Permission denied")
@@ -197,7 +197,7 @@ def can_user(action: str, resource: str, resource_key: Optional[str] = None) -> 
     if g.user and g.user.get("tenant"):
         resource_data["tenant"] = g.user["tenant"]
     
-    return permis.check(g.user_id, action, resource_data)
+    return permissio.check(g.user_id, action, resource_data)
 
 
 # ============================================================================
@@ -208,7 +208,7 @@ def can_user(action: str, resource: str, resource_key: Optional[str] = None) -> 
 def index():
     """Public route - no permission required."""
     return jsonify({
-        "message": "Welcome to the Permis.io Flask example",
+        "message": "Welcome to the Permissio.io Flask example",
         "endpoints": [
             "GET /documents",
             "GET /documents/<id>",
@@ -322,8 +322,8 @@ def get_settings():
 @app.route("/auth/sync", methods=["POST"])
 def sync_user():
     """
-    Sync user data with Permis.io after authentication.
-    Call this after your user logs in to ensure they exist in Permis.io.
+    Sync user data with Permissio.io after authentication.
+    Call this after your user logs in to ensure they exist in Permissio.io.
     """
     if not g.user_id:
         abort(401)
@@ -331,7 +331,7 @@ def sync_user():
     data = request.get_json() or {}
     
     try:
-        synced_user = permis.sync_user({
+        synced_user = permissio.sync_user({
             "key": g.user_id,
             "email": data.get("email", g.user.get("email")),
             "first_name": data.get("first_name"),
@@ -344,7 +344,7 @@ def sync_user():
             "user_key": synced_user.key,
         })
         
-    except PermisApiError as e:
+    except PermissioApiError as e:
         return jsonify({"error": e.message}), e.status_code
 
 
@@ -393,7 +393,7 @@ def cleanup(exception=None):
 # ============================================================================
 
 if __name__ == "__main__":
-    print("Starting Flask app with Permis.io integration...")
+    print("Starting Flask app with Permissio.io integration...")
     print("Try these commands:")
     print("  curl http://localhost:5000/")
     print('  curl -H "Authorization: Bearer user123" http://localhost:5000/documents')

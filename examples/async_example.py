@@ -1,5 +1,5 @@
 """
-Async example for the Permis.io Python SDK.
+Async example for the Permissio.io Python SDK.
 
 This example demonstrates:
 - Async client usage
@@ -10,10 +10,10 @@ This example demonstrates:
 
 import asyncio
 
-from permisio import Permis
-from permisio.enforcement import UserBuilder, ResourceBuilder
-from permisio.models import UserCreate, TenantCreate
-from permisio.errors import PermisApiError
+from permissio import Permissio
+from permissio.enforcement import UserBuilder, ResourceBuilder
+from permissio.models import UserCreate, TenantCreate
+from permissio.errors import PermissioApiError
 
 
 async def main():
@@ -24,7 +24,7 @@ async def main():
     print("=== Async Client Example ===\n")
     
     # Initialize the client (works for both sync and async)
-    permis = Permis(
+    permissio = Permissio(
         token="permis_key_your_api_key_here",
         project_id="my-project",
         environment_id="production",
@@ -38,7 +38,7 @@ async def main():
         print("--- Permission Checks ---")
         
         # Simple async check
-        allowed = await permis.check_async("user@example.com", "read", "document")
+        allowed = await permissio.check_async("user@example.com", "read", "document")
         print(f"Can user read document? {allowed}")
         
         # Check with ABAC
@@ -55,11 +55,11 @@ async def main():
             .build()
         )
         
-        allowed = await permis.check_async(user, "read", resource)
+        allowed = await permissio.check_async(user, "read", resource)
         print(f"Can engineering user read doc-123? {allowed}")
         
         # Get detailed response
-        response = await permis.check_with_details_async(
+        response = await permissio.check_with_details_async(
             "user@example.com", "write", "document"
         )
         print(f"Write allowed: {response.allowed}")
@@ -72,10 +72,10 @@ async def main():
         
         # Check multiple permissions concurrently
         checks = [
-            permis.check_async("user1@example.com", "read", "document"),
-            permis.check_async("user2@example.com", "read", "document"),
-            permis.check_async("user1@example.com", "write", "document"),
-            permis.check_async("user2@example.com", "delete", "document"),
+            permissio.check_async("user1@example.com", "read", "document"),
+            permissio.check_async("user2@example.com", "read", "document"),
+            permissio.check_async("user1@example.com", "write", "document"),
+            permissio.check_async("user2@example.com", "delete", "document"),
         ]
         
         results = await asyncio.gather(*checks)
@@ -98,11 +98,11 @@ async def main():
         
         try:
             # List users async
-            users = await permis.api.users.list_async(page=1, per_page=5)
+            users = await permissio.api.users.list_async(page=1, per_page=5)
             print(f"Total users: {users.pagination.total}")
             
             # Create user async
-            new_user = await permis.api.users.create_async(UserCreate(
+            new_user = await permissio.api.users.create_async(UserCreate(
                 key="async.user@example.com",
                 email="async.user@example.com",
                 first_name="Async",
@@ -111,14 +111,14 @@ async def main():
             print(f"Created user: {new_user.key}")
             
             # Get user async
-            user = await permis.api.users.get_async("async.user@example.com")
+            user = await permissio.api.users.get_async("async.user@example.com")
             print(f"Got user: {user.key}")
             
             # Delete user async
-            await permis.api.users.delete_async("async.user@example.com")
+            await permissio.api.users.delete_async("async.user@example.com")
             print("Deleted user")
             
-        except PermisApiError as e:
+        except PermissioApiError as e:
             print(f"API error: {e.message}")
         
         # =====================================================================
@@ -129,7 +129,7 @@ async def main():
         
         try:
             # Assign role async
-            assignment = await permis.api.role_assignments.assign_async(
+            assignment = await permissio.api.role_assignments.assign_async(
                 user="user@example.com",
                 role="viewer",
                 tenant="acme-corp",
@@ -137,20 +137,20 @@ async def main():
             print(f"Assigned role: {assignment.role_key}")
             
             # List assignments async
-            assignments = await permis.api.role_assignments.list_async(
+            assignments = await permissio.api.role_assignments.list_async(
                 user="user@example.com"
             )
             print(f"User has {len(assignments.data)} role assignments")
             
             # Unassign role async
-            await permis.api.role_assignments.unassign_async(
+            await permissio.api.role_assignments.unassign_async(
                 user="user@example.com",
                 role="viewer",
                 tenant="acme-corp",
             )
             print("Unassigned role")
             
-        except PermisApiError as e:
+        except PermissioApiError as e:
             print(f"API error: {e.message}")
         
         # =====================================================================
@@ -161,10 +161,10 @@ async def main():
         
         # Fetch multiple resources concurrently
         try:
-            users_task = permis.api.users.list_async()
-            tenants_task = permis.api.tenants.list_async()
-            roles_task = permis.api.roles.list_async()
-            resources_task = permis.api.resources.list_async()
+            users_task = permissio.api.users.list_async()
+            tenants_task = permissio.api.tenants.list_async()
+            roles_task = permissio.api.roles.list_async()
+            resources_task = permissio.api.resources.list_async()
             
             users, tenants, roles, resources = await asyncio.gather(
                 users_task, tenants_task, roles_task, resources_task
@@ -175,7 +175,7 @@ async def main():
             print(f"  Roles: {roles.pagination.total}")
             print(f"  Resources: {resources.pagination.total}")
             
-        except PermisApiError as e:
+        except PermissioApiError as e:
             print(f"API error: {e.message}")
         
     finally:
@@ -184,7 +184,7 @@ async def main():
         # =====================================================================
         
         print("\n--- Cleanup ---")
-        await permis.close_async()
+        await permissio.close_async()
         print("Client closed")
 
 
@@ -193,8 +193,8 @@ async def context_manager_example():
     
     print("\n=== Context Manager Example ===")
     
-    async with Permis(token="permis_key_your_api_key") as permis:
-        allowed = await permis.check_async("user@example.com", "read", "document")
+    async with Permissio(token="permis_key_your_api_key") as permissio:
+        allowed = await permissio.check_async("user@example.com", "read", "document")
         print(f"Permission check result: {allowed}")
     
     print("Client automatically closed")
@@ -205,12 +205,12 @@ async def batch_operations_example():
     
     print("\n=== Batch Operations Example ===")
     
-    permis = Permis(token="permis_key_your_api_key")
+    permissio = Permissio(token="permis_key_your_api_key")
     
     try:
         # Create multiple users concurrently
         user_creates = [
-            permis.api.users.create_async(UserCreate(
+            permissio.api.users.create_async(UserCreate(
                 key=f"batch.user{i}@example.com",
                 email=f"batch.user{i}@example.com",
             ))
@@ -226,7 +226,7 @@ async def batch_operations_example():
         
         # Clean up - delete created users
         delete_tasks = [
-            permis.api.users.delete_async(f"batch.user{i}@example.com")
+            permissio.api.users.delete_async(f"batch.user{i}@example.com")
             for i in range(5)
         ]
         
@@ -234,7 +234,7 @@ async def batch_operations_example():
         print("Cleaned up batch users")
         
     finally:
-        await permis.close_async()
+        await permissio.close_async()
 
 
 if __name__ == "__main__":

@@ -1,1 +1,1 @@
-# Tests for the Permis.io Python SDK
+# Tests for the Permissio.io Python SDK
