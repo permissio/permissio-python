@@ -89,11 +89,19 @@ strict_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 show_error_codes = true
-files = ["permisio"]
+files = ["permissio"]
+
+# Disable override checks for API client methods that intentionally
+# have different signatures in subclasses (e.g., get, delete methods)
+[[tool.mypy.overrides]]
+module = "permissio.api.*"
+disable_error_code = ["override"]
 
 [tool.ruff]
 target-version = "py39"
 line-length = 120
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -106,10 +114,14 @@ select = [
 ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # do not perform function calls in argument defaults
+    "UP006", # Use `list` instead of `List` for type annotation (keep for Python 3.9 compat)
+    "UP007", # Use `X | Y` for Union types (keep for Python 3.9 compat)
+    "UP035", # `typing.Dict` is deprecated (keep for Python 3.9 compat)
+    "C901",  # Function is too complex (allow complex functions)
 ]
 
-[tool.ruff.isort]
-known-first-party = ["permisio"]
+[tool.ruff.lint.isort]
+known-first-party = ["permissio"]
 
 [tool.black]
 line-length = 120

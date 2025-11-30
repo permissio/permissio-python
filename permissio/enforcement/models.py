@@ -6,7 +6,7 @@ with support for ABAC (Attribute-Based Access Control).
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
 
 
 @dataclass

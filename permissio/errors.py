@@ -2,7 +2,7 @@
 Error types for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class PermissioError(Exception):

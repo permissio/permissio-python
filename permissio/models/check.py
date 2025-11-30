@@ -3,7 +3,7 @@ Permission check models for the Permissio.io SDK.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 
 @dataclass

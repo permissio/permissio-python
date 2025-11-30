@@ -2,19 +2,18 @@
 Resources API client for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 from permissio.api.base import BaseApiClient
 from permissio.config import PermissioConfig
+from permissio.models.common import PaginatedResponse
 from permissio.models.resource import (
-    Resource,
-    ResourceCreate,
-    ResourceUpdate,
-    ResourceRead,
     ResourceAction,
     ResourceAttribute,
+    ResourceCreate,
+    ResourceRead,
+    ResourceUpdate,
 )
-from permissio.models.common import PaginatedResponse
 
 
 class ResourcesApi(BaseApiClient):

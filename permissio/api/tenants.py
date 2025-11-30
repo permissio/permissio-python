@@ -2,12 +2,12 @@
 Tenants API client for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
 
 from permissio.api.base import BaseApiClient
 from permissio.config import PermissioConfig
-from permissio.models.tenant import Tenant, TenantCreate, TenantUpdate, TenantRead
 from permissio.models.common import PaginatedResponse
+from permissio.models.tenant import TenantCreate, TenantRead, TenantUpdate
 
 
 class TenantsApi(BaseApiClient):

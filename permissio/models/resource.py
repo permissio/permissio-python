@@ -3,10 +3,10 @@ Resource models for the Permissio.io SDK.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from permissio.models.common import parse_datetime, format_datetime
+from permissio.models.common import format_datetime, parse_datetime
 
 
 @dataclass
@@ -233,7 +233,7 @@ class ResourceRead:
                 actions.append(ResourceAction(key=a))
             elif isinstance(a, dict):
                 actions.append(ResourceAction.from_dict(a))
-        
+
         # Handle attributes as either strings or objects
         raw_attributes = data.get("attributes", [])
         attributes = []
@@ -243,7 +243,7 @@ class ResourceRead:
                     attributes.append(ResourceAttribute(key=a, type="string"))
                 elif isinstance(a, dict):
                     attributes.append(ResourceAttribute.from_dict(a))
-        
+
         return cls(
             id=data.get("id", ""),
             key=data.get("key", ""),

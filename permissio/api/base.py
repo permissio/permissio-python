@@ -2,9 +2,9 @@
 Base API client for the Permissio.io SDK.
 """
 
-import time
 import logging
-from typing import Optional, Dict, Any, TypeVar, Type, List, Union
+import time
+from typing import Any, Dict, Optional, TypeVar
 from urllib.parse import urljoin
 
 import httpx
@@ -12,13 +12,13 @@ import httpx
 from permissio.config import PermissioConfig
 from permissio.errors import (
     PermissioApiError,
-    PermissioNetworkError,
-    PermissioTimeoutError,
-    PermissioRateLimitError,
     PermissioAuthenticationError,
-    PermissioPermissionError,
-    PermissioNotFoundError,
     PermissioConflictError,
+    PermissioNetworkError,
+    PermissioNotFoundError,
+    PermissioPermissionError,
+    PermissioRateLimitError,
+    PermissioTimeoutError,
 )
 
 T = TypeVar("T")
@@ -98,7 +98,7 @@ class BaseApiClient:
         """
         if not self.config.has_scope():
             raise ValueError("project_id and environment_id are required for this operation")
-        
+
         base_path = f"{self.FACTS_API_PREFIX}/{self.config.project_id}/{self.config.environment_id}"
         full_path = f"{base_path}/{path.lstrip('/')}" if path else base_path
         return urljoin(self.config.api_url + "/", full_path.lstrip("/"))
@@ -118,7 +118,7 @@ class BaseApiClient:
         """
         if not self.config.has_scope():
             raise ValueError("project_id and environment_id are required for this operation")
-        
+
         base_path = f"{self.SCHEMA_API_PREFIX}/{self.config.project_id}/{self.config.environment_id}"
         full_path = f"{base_path}/{path.lstrip('/')}" if path else base_path
         return urljoin(self.config.api_url + "/", full_path.lstrip("/"))
@@ -135,7 +135,7 @@ class BaseApiClient:
         """
         if not self.config.has_scope():
             raise ValueError("project_id and environment_id are required for this operation")
-        
+
         path = f"{self.ALLOWED_API_PREFIX}/{self.config.project_id}/{self.config.environment_id}"
         return urljoin(self.config.api_url + "/", path.lstrip("/"))
 
@@ -237,7 +237,7 @@ class BaseApiClient:
             return float(exception.retry_after)
 
         # Exponential backoff: 1s, 2s, 4s, 8s, ...
-        return min(2**attempt, 30)  # Cap at 30 seconds
+        return float(min(2**attempt, 30))  # Cap at 30 seconds
 
     def _log_request(self, method: str, url: str, body: Optional[Dict] = None) -> None:
         """Log a request if debug mode is enabled."""

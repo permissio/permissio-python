@@ -3,12 +3,12 @@ Permissio.io enforcement models for permission checks.
 """
 
 from permissio.enforcement.models import (
-    UserBuilder,
-    ResourceBuilder,
-    ContextBuilder,
-    CheckUser,
-    CheckResource,
     CheckContext,
+    CheckResource,
+    CheckUser,
+    ContextBuilder,
+    ResourceBuilder,
+    UserBuilder,
 )
 
 __all__ = [

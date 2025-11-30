@@ -2,10 +2,9 @@
 Common models and utilities for the Permissio.io SDK.
 """
 
-from dataclasses import dataclass, field
-from typing import TypeVar, Generic, List, Optional, Dict, Any
+from dataclasses import dataclass
 from datetime import datetime
-
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -52,7 +51,7 @@ class PaginatedResponse(Generic[T]):
     pagination: Pagination
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], item_factory: callable) -> "PaginatedResponse[T]":
+    def from_dict(cls, data: Dict[str, Any], item_factory: Callable[[Dict[str, Any]], T]) -> "PaginatedResponse[T]":
         """
         Create a PaginatedResponse from a dictionary.
 
@@ -64,14 +63,14 @@ class PaginatedResponse(Generic[T]):
             A PaginatedResponse instance.
         """
         items = [item_factory(item) for item in data.get("data", [])]
-        
+
         # Handle both nested pagination object and flat response with total_count/page_count
         if "pagination" in data:
             pagination = Pagination.from_dict(data.get("pagination", {}))
         else:
             # Flat response format: total_count, page_count at top level
             pagination = Pagination.from_dict(data)
-        
+
         return cls(data=items, pagination=pagination)
 
 

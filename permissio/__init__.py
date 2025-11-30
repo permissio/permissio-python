@@ -5,8 +5,8 @@ A Python SDK for interacting with the Permissio.io authorization platform.
 """
 
 from permissio.client import Permissio
-from permissio.config import PermissioConfig, ConfigBuilder
-from permissio.errors import PermissioError, PermissioApiError, PermissioValidationError
+from permissio.config import ConfigBuilder, PermissioConfig
+from permissio.errors import PermissioApiError, PermissioError, PermissioValidationError
 
 __version__ = "0.1.0"
 __all__ = [

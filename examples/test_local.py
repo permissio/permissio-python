@@ -16,10 +16,9 @@ import sys
 # Add parent directory to path for development
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from permissio import Permissio, ConfigBuilder
-from permissio.models import UserCreate, TenantCreate, RoleCreate
-from permissio.errors import PermissioApiError, PermissioNotFoundError
-
+from permissio import ConfigBuilder, Permissio
+from permissio.errors import PermissioApiError
+from permissio.models import UserCreate
 
 # ============================================================================
 # Configuration - UPDATE THESE VALUES
@@ -40,7 +39,7 @@ def main():
     print("=" * 60)
     print("Permissio.io Python SDK - Local Backend Test")
     print("=" * 60)
-    print(f"\nConfiguration:")
+    print("\nConfiguration:")
     print(f"  API URL: {API_URL}")
     print(f"  Project: {PROJECT_ID}")
     print(f"  Environment: {ENVIRONMENT_ID}")
@@ -54,9 +53,9 @@ def main():
         .with_debug(True)
         .build()
     )
-    
+
     permissio = Permissio(config=config)
-    
+
     # Initialize the SDK to fetch project/environment scope from API key
     try:
         permissio.init()
@@ -65,7 +64,7 @@ def main():
     except Exception as e:
         print(f"✗ Failed to initialize SDK: {e}")
         return
-    
+
     try:
         # =====================================================================
         # Test 1: List Users
@@ -78,7 +77,7 @@ def main():
                 print(f"  - {user.key}")
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
-        
+
         # =====================================================================
         # Test 2: List Tenants
         # =====================================================================
@@ -90,7 +89,7 @@ def main():
                 print(f"  - {tenant.key}: {tenant.name}")
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
-        
+
         # =====================================================================
         # Test 3: List Roles
         # =====================================================================
@@ -102,7 +101,7 @@ def main():
                 print(f"  - {role.key}: {role.name}")
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
-        
+
         # =====================================================================
         # Test 4: List Resources
         # =====================================================================
@@ -114,7 +113,7 @@ def main():
                 print(f"  - {resource.key}: {resource.name}")
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
-        
+
         # =====================================================================
         # Test 5: Create and Delete User
         # =====================================================================
@@ -129,23 +128,23 @@ def main():
                 last_name="Test",
             ))
             print(f"✓ Created user: {new_user.key}")
-            
+
             # Get
             fetched = permissio.api.users.get(test_user_key)
             print(f"✓ Fetched user: {fetched.key}")
-            
+
             # Delete
             permissio.api.users.delete(test_user_key)
             print(f"✓ Deleted user: {test_user_key}")
-            
+
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
             # Try to clean up
             try:
                 permissio.api.users.delete(test_user_key)
-            except:
+            except Exception:
                 pass
-        
+
         # =====================================================================
         # Test 6: Permission Check
         # =====================================================================
@@ -154,23 +153,23 @@ def main():
             # Get a user and resource to test with
             users = permissio.api.users.list(per_page=1)
             resources = permissio.api.resources.list(per_page=1)
-            
+
             if users.data and resources.data:
                 user_key = users.data[0].key
                 resource_key = resources.data[0].key
-                
+
                 allowed = permissio.check(user_key, "read", resource_key)
                 print(f"✓ Check result: {user_key} can read {resource_key}: {allowed}")
             else:
                 print("⚠ No users or resources found for permission check test")
-                
+
         except PermissioApiError as e:
             print(f"✗ Error: {e.message} (status: {e.status_code})")
-        
+
         print("\n" + "=" * 60)
         print("Tests completed!")
         print("=" * 60)
-        
+
     finally:
         permissio.close()
 

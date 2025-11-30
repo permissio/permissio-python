@@ -2,17 +2,15 @@
 Role Assignments API client for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 from permissio.api.base import BaseApiClient
 from permissio.config import PermissioConfig
+from permissio.models.common import PaginatedResponse
 from permissio.models.role_assignment import (
-    RoleAssignment,
     RoleAssignmentCreate,
     RoleAssignmentRead,
-    BulkRoleAssignment,
 )
-from permissio.models.common import PaginatedResponse
 
 
 class RoleAssignmentsApi(BaseApiClient):
@@ -249,7 +247,7 @@ class RoleAssignmentsApi(BaseApiClient):
         url = self._build_facts_url("role_assignments/bulk")
         response = self.post(url, json={"assignments": assignment_dicts})
         data = response.json()
-        
+
         if isinstance(data, list):
             return [RoleAssignmentRead.from_dict(item) for item in data]
         return [RoleAssignmentRead.from_dict(item) for item in data.get("data", [])]
@@ -274,7 +272,7 @@ class RoleAssignmentsApi(BaseApiClient):
         url = self._build_facts_url("role_assignments/bulk")
         response = await self.post_async(url, json={"assignments": assignment_dicts})
         data = response.json()
-        
+
         if isinstance(data, list):
             return [RoleAssignmentRead.from_dict(item) for item in data]
         return [RoleAssignmentRead.from_dict(item) for item in data.get("data", [])]

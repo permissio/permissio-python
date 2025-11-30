@@ -2,25 +2,24 @@
 Main Permissio.io SDK client.
 """
 
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
 
-from permissio.config import PermissioConfig, ConfigBuilder, resolve_config
 from permissio.api.base import BaseApiClient
-from permissio.api.users import UsersApi
-from permissio.api.tenants import TenantsApi
-from permissio.api.roles import RolesApi
 from permissio.api.resources import ResourcesApi
 from permissio.api.role_assignments import RoleAssignmentsApi
-from permissio.models.check import CheckRequest, CheckResponse, BulkCheckRequest, BulkCheckResponse
+from permissio.api.roles import RolesApi
+from permissio.api.tenants import TenantsApi
+from permissio.api.users import UsersApi
+from permissio.config import ConfigBuilder, PermissioConfig, resolve_config
 from permissio.enforcement.models import (
-    CheckUser,
     CheckResource,
-    UserBuilder,
+    CheckUser,
     ResourceBuilder,
-    normalize_user,
+    UserBuilder,
     normalize_resource,
-    normalize_context,
+    normalize_user,
 )
+from permissio.models.check import BulkCheckResponse, CheckResponse
 
 
 class PermissioApi:
@@ -419,7 +418,7 @@ class Permissio:
             )
 
         # 2. Get unique role keys from assignments
-        role_keys = set(a.role for a in assignments)
+        role_keys = {a.role for a in assignments}
 
         if self._config.debug:
             logger.debug(f"User's role keys: {list(role_keys)}")
@@ -560,7 +559,7 @@ class Permissio:
             )
 
         # 2. Get unique role keys from assignments
-        role_keys = set(a.role for a in assignments)
+        role_keys = {a.role for a in assignments}
 
         if self._config.debug:
             logger.debug(f"User's role keys: {list(role_keys)}")

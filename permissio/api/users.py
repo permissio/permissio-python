@@ -2,13 +2,13 @@
 Users API client for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from permissio.api.base import BaseApiClient
 from permissio.config import PermissioConfig
-from permissio.models.user import User, UserCreate, UserUpdate, UserRead, UserSync
+from permissio.models.common import PaginatedResponse
 from permissio.models.role_assignment import RoleAssignment, RoleAssignmentCreate
-from permissio.models.common import PaginatedResponse, ListParams
+from permissio.models.user import UserCreate, UserRead, UserSync, UserUpdate
 
 
 class UsersApi(BaseApiClient):
@@ -393,7 +393,7 @@ class UsersApi(BaseApiClient):
         url = self._build_facts_url("role_assignments")
         response = super().get(url, params=params)
         data = response.json()
-        
+
         # Handle both paginated and non-paginated responses
         if isinstance(data, list):
             return [RoleAssignment.from_dict(item) for item in data]
@@ -417,7 +417,7 @@ class UsersApi(BaseApiClient):
         url = self._build_facts_url("role_assignments")
         response = await super().get_async(url, params=params)
         data = response.json()
-        
+
         if isinstance(data, list):
             return [RoleAssignment.from_dict(item) for item in data]
         return [RoleAssignment.from_dict(item) for item in data.get("data", [])]

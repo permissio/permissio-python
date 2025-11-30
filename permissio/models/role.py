@@ -3,10 +3,10 @@ Role models for the Permissio.io SDK.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from permissio.models.common import parse_datetime, format_datetime
+from permissio.models.common import format_datetime, parse_datetime
 
 
 @dataclass

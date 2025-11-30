@@ -9,13 +9,12 @@ This example demonstrates:
 """
 
 from functools import wraps
-from typing import Optional, Callable, Any
+from typing import Callable, Optional
 
-from flask import Flask, g, request, jsonify, abort
+from flask import Flask, abort, g, jsonify, request
 
 from permissio import Permissio
-from permissio.errors import PermissioApiError, PermissioNotFoundError
-
+from permissio.errors import PermissioApiError
 
 # ============================================================================
 # Flask Application Setup
@@ -44,7 +43,7 @@ def authenticate():
     """
     # Get auth token from header
     auth_header = request.headers.get("Authorization", "")
-    
+
     if auth_header.startswith("Bearer "):
         token = auth_header[7:]
         # In a real app, validate the token and get user info
@@ -67,12 +66,12 @@ def authenticate():
 def require_permission(action: str, resource: str, get_resource_key: Optional[Callable] = None):
     """
     Decorator to require a specific permission for a route.
-    
+
     Args:
         action: The action to check (e.g., "read", "write", "delete")
         resource: The resource type (e.g., "document", "project")
         get_resource_key: Optional callable to extract resource key from request
-    
+
     Example:
         @app.route("/documents/<doc_id>")
         @require_permission("read", "document", lambda: request.view_args.get("doc_id"))
@@ -84,26 +83,26 @@ def require_permission(action: str, resource: str, get_resource_key: Optional[Ca
         def decorated_function(*args, **kwargs):
             if not g.user_id:
                 abort(401, description="Authentication required")
-            
+
             # Build resource for check
             resource_data = {"type": resource}
-            
+
             # Add resource key if provided
             if get_resource_key:
                 resource_key = get_resource_key()
                 if resource_key:
                     resource_data["key"] = resource_key
-            
+
             # Add tenant if available
             if g.user and g.user.get("tenant"):
                 resource_data["tenant"] = g.user["tenant"]
-            
+
             # Check permission
             allowed = permissio.check(g.user_id, action, resource_data)
-            
+
             if not allowed:
                 abort(403, description=f"Permission denied: {action} on {resource}")
-            
+
             return f(*args, **kwargs)
         return decorated_function
     return decorator
@@ -112,10 +111,10 @@ def require_permission(action: str, resource: str, get_resource_key: Optional[Ca
 def require_any_permission(*permissions):
     """
     Decorator to require any of the specified permissions.
-    
+
     Args:
         permissions: Tuples of (action, resource)
-    
+
     Example:
         @app.route("/documents")
         @require_any_permission(("read", "document"), ("admin", "document"))
@@ -127,16 +126,16 @@ def require_any_permission(*permissions):
         def decorated_function(*args, **kwargs):
             if not g.user_id:
                 abort(401, description="Authentication required")
-            
+
             # Check each permission
             for action, resource in permissions:
                 resource_data = {"type": resource}
                 if g.user and g.user.get("tenant"):
                     resource_data["tenant"] = g.user["tenant"]
-                
+
                 if permissio.check(g.user_id, action, resource_data):
                     return f(*args, **kwargs)
-            
+
             abort(403, description="Permission denied")
         return decorated_function
     return decorator
@@ -145,7 +144,7 @@ def require_any_permission(*permissions):
 def require_all_permissions(*permissions):
     """
     Decorator to require all of the specified permissions.
-    
+
     Args:
         permissions: Tuples of (action, resource)
     """
@@ -154,26 +153,26 @@ def require_all_permissions(*permissions):
         def decorated_function(*args, **kwargs):
             if not g.user_id:
                 abort(401, description="Authentication required")
-            
+
             # Build bulk check
             checks = []
             for action, resource in permissions:
                 resource_data = {"type": resource}
                 if g.user and g.user.get("tenant"):
                     resource_data["tenant"] = g.user["tenant"]
-                
+
                 checks.append({
                     "user": g.user_id,
                     "action": action,
                     "resource": resource_data,
                 })
-            
+
             # Bulk check
             results = permissio.bulk_check(checks)
-            
+
             if not results.all_allowed():
                 abort(403, description="Permission denied")
-            
+
             return f(*args, **kwargs)
         return decorated_function
     return decorator
@@ -190,13 +189,13 @@ def can_user(action: str, resource: str, resource_key: Optional[str] = None) -> 
     """
     if not g.user_id:
         return False
-    
+
     resource_data = {"type": resource}
     if resource_key:
         resource_data["key"] = resource_key
     if g.user and g.user.get("tenant"):
         resource_data["tenant"] = g.user["tenant"]
-    
+
     return permissio.check(g.user_id, action, resource_data)
 
 
@@ -256,14 +255,14 @@ def get_document(doc_id):
 def create_document():
     """Create a document - requires create permission."""
     data = request.get_json()
-    
+
     # In a real app, save to database
     new_doc = {
         "id": "doc-new",
         "title": data.get("title", "Untitled"),
         "content": data.get("content", ""),
     }
-    
+
     return jsonify(new_doc), 201
 
 
@@ -272,14 +271,14 @@ def create_document():
 def update_document(doc_id):
     """Update a document - requires write permission on the document."""
     data = request.get_json()
-    
+
     # In a real app, update in database
     updated_doc = {
         "id": doc_id,
         "title": data.get("title", f"Document {doc_id}"),
         "content": data.get("content", ""),
     }
-    
+
     return jsonify(updated_doc)
 
 
@@ -327,9 +326,9 @@ def sync_user():
     """
     if not g.user_id:
         abort(401)
-    
+
     data = request.get_json() or {}
-    
+
     try:
         synced_user = permissio.sync_user({
             "key": g.user_id,
@@ -338,12 +337,12 @@ def sync_user():
             "last_name": data.get("last_name"),
             "attributes": data.get("attributes", {}),
         })
-        
+
         return jsonify({
             "message": "User synced successfully",
             "user_key": synced_user.key,
         })
-        
+
     except PermissioApiError as e:
         return jsonify({"error": e.message}), e.status_code
 
@@ -398,5 +397,5 @@ if __name__ == "__main__":
     print("  curl http://localhost:5000/")
     print('  curl -H "Authorization: Bearer user123" http://localhost:5000/documents')
     print('  curl -H "Authorization: Bearer user123" http://localhost:5000/documents/doc-1')
-    
+
     app.run(debug=True, port=5000)

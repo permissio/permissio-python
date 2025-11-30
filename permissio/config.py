@@ -3,7 +3,8 @@ Configuration types and utilities for the Permissio.io SDK.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 import httpx
 
 # Constants

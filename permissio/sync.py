@@ -21,43 +21,43 @@ Example:
 # Re-export the main Permissio class for convenience
 # The Permissio class already provides both sync and async methods
 from permissio.client import Permissio, PermissioApi
-from permissio.config import PermissioConfig, ConfigBuilder
-from permissio.errors import (
-    PermissioError,
-    PermissioApiError,
-    PermissioValidationError,
-    PermissioNetworkError,
-    PermissioTimeoutError,
-    PermissioRateLimitError,
-    PermissioAuthenticationError,
-    PermissioPermissionError,
-    PermissioNotFoundError,
-    PermissioConflictError,
-)
+from permissio.config import ConfigBuilder, PermissioConfig
 from permissio.enforcement import (
-    UserBuilder,
-    ResourceBuilder,
-    CheckUser,
-    CheckResource,
     CheckContext,
+    CheckResource,
+    CheckUser,
+    ResourceBuilder,
+    UserBuilder,
+)
+from permissio.errors import (
+    PermissioApiError,
+    PermissioAuthenticationError,
+    PermissioConflictError,
+    PermissioError,
+    PermissioNetworkError,
+    PermissioNotFoundError,
+    PermissioPermissionError,
+    PermissioRateLimitError,
+    PermissioTimeoutError,
+    PermissioValidationError,
 )
 from permissio.models import (
-    User,
-    UserCreate,
-    UserUpdate,
-    Tenant,
-    TenantCreate,
-    TenantUpdate,
-    Role,
-    RoleCreate,
-    RoleUpdate,
+    CheckRequest,
+    CheckResponse,
     Resource,
     ResourceCreate,
     ResourceUpdate,
+    Role,
     RoleAssignment,
     RoleAssignmentCreate,
-    CheckRequest,
-    CheckResponse,
+    RoleCreate,
+    RoleUpdate,
+    Tenant,
+    TenantCreate,
+    TenantUpdate,
+    User,
+    UserCreate,
+    UserUpdate,
 )
 
 __all__ = [

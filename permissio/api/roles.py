@@ -2,12 +2,12 @@
 Roles API client for the Permissio.io SDK.
 """
 
-from typing import Optional, Dict, Any, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 from permissio.api.base import BaseApiClient
 from permissio.config import PermissioConfig
-from permissio.models.role import Role, RoleCreate, RoleUpdate, RoleRead
 from permissio.models.common import PaginatedResponse
+from permissio.models.role import RoleCreate, RoleRead, RoleUpdate
 
 
 class RolesApi(BaseApiClient):
