@@ -5,7 +5,7 @@ Official Python SDK for the [Permissio.io](https://permissio.io) authorization p
 ## Installation
 
 ```bash
-pip install permisio
+pip install permissio
 ```
 
 ## Quick Start
@@ -13,11 +13,9 @@ pip install permisio
 ```python
 from permissio import Permissio
 
-# Initialize the client
+# Initialize the client (auto-detects project/environment from token)
 permissio = Permissio(
     token="permis_key_your_api_key",
-    project_id="your-project-id",
-    environment_id="your-environment-id",
 )
 
 # Check permission
@@ -27,18 +25,24 @@ else:
     print("Access denied!")
 ```
 
-## Synchronous Usage
-
-For synchronous-first usage (similar to Permit.io SDK):
+If you need to target a specific project and environment, pass them explicitly:
 
 ```python
-from permissio.sync import Permissio
-
 permissio = Permissio(
     token="permis_key_your_api_key",
     project_id="your-project-id",
     environment_id="your-environment-id",
 )
+```
+
+## Synchronous Usage
+
+For synchronous-first usage, import from `permissio.sync`:
+
+```python
+from permissio.sync import Permissio
+
+permissio = Permissio(token="permis_key_your_api_key")
 
 # Simple permission check
 allowed = permissio.check("user@example.com", "read", "document")
@@ -56,33 +60,31 @@ allowed = permissio.check(
 
 ## Async Usage
 
-For async applications:
+The default `permissio.Permissio` class exposes async methods alongside sync ones:
 
 ```python
 import asyncio
 from permissio import Permissio
 
 async def main():
-    permissio = Permissio(
-        token="permis_key_your_api_key",
-        project_id="your-project-id",
-        environment_id="your-environment-id",
-    )
+    permissio = Permissio(token="permis_key_your_api_key")
 
     # Async permission check
     allowed = await permissio.check_async("user@example.com", "read", "document")
-    
-    # Close the client when done
+
+    # Close the async HTTP client when done
     await permissio.close_async()
 
 asyncio.run(main())
 ```
 
+> **Note:** Every API method has an `_async` variant (e.g. `permissio.api.users.list_async()`). The sync wrappers in `permissio.sync` call the async variants internally via a managed event loop.
+
 ## ABAC (Attribute-Based Access Control)
 
 ```python
 from permissio import Permissio
-from permissio.enforcement import UserBuilder, ResourceBuilder
+from permissio.enforcement import UserBuilder, ResourceBuilder, ContextBuilder
 
 permissio = Permissio(token="permis_key_your_api_key")
 
@@ -91,6 +93,8 @@ user = (
     UserBuilder("user@example.com")
     .with_attribute("department", "engineering")
     .with_attribute("level", 5)
+    .with_first_name("Jane")
+    .with_last_name("Doe")
     .build()
 )
 
@@ -103,11 +107,29 @@ resource = (
     .build()
 )
 
-# Check with ABAC
-allowed = permissio.check(user, "read", resource)
+# Build optional check context
+context = (
+    ContextBuilder()
+    .with_value("ip_address", "192.168.1.1")
+    .with_value("request_time", "2026-03-15T12:00:00Z")
+    .build()
+)
+
+# Check with ABAC + context
+allowed = permissio.check(user, "read", resource, context=context)
 ```
 
+### Enforcement builders
+
+| Class | Description |
+|-------|-------------|
+| `UserBuilder(key)` | Fluent builder for `CheckUser`; supports `.with_attribute()`, `.with_attributes()`, `.with_first_name()`, `.with_last_name()`, `.with_email()` |
+| `ResourceBuilder(type)` | Fluent builder for `CheckResource`; supports `.with_key()`, `.with_tenant()`, `.with_attribute()`, `.with_attributes()` |
+| `ContextBuilder()` | Fluent builder for `CheckContext`; supports `.with_value()`, `.with_values()` |
+
 ## API Usage
+
+All API methods exist in both sync and async forms. The sync form is the bare name; the async form appends `_async` (e.g. `list()` / `list_async()`).
 
 ### Users
 
@@ -135,15 +157,28 @@ updated_user = permissio.api.users.update("user@example.com", UserUpdate(
 
 # Delete a user
 permissio.api.users.delete("user@example.com")
+
+# Sync user (upsert) and assign roles
+permissio.api.users.sync("user@example.com", roles=["editor"], tenant="acme-corp")
+
+# Assign / unassign a role
+permissio.api.users.assign_role("user@example.com", "editor", tenant="acme-corp")
+permissio.api.users.unassign_role("user@example.com", "editor", tenant="acme-corp")
+
+# Get tenants for a user
+tenants = permissio.api.users.get_tenants("user@example.com")
 ```
 
 ### Tenants
 
 ```python
-from permissio.models import TenantCreate
+from permissio.models import TenantCreate, TenantUpdate
 
 # List tenants
 tenants = permissio.api.tenants.list()
+
+# Get a tenant
+tenant = permissio.api.tenants.get("acme-corp")
 
 # Create a tenant
 tenant = permissio.api.tenants.create(TenantCreate(
@@ -151,17 +186,29 @@ tenant = permissio.api.tenants.create(TenantCreate(
     name="Acme Corporation",
 ))
 
-# Get a tenant
-tenant = permissio.api.tenants.get("acme-corp")
+# Update a tenant
+tenant = permissio.api.tenants.update("acme-corp", TenantUpdate(name="ACME Corp"))
+
+# Delete a tenant
+permissio.api.tenants.delete("acme-corp")
+
+# Sync tenant (upsert)
+permissio.api.tenants.sync("acme-corp", name="Acme Corporation")
+
+# Remove a user from a tenant
+permissio.api.tenants.remove_user("acme-corp", "user@example.com")
 ```
 
 ### Roles
 
 ```python
-from permissio.models import RoleCreate
+from permissio.models import RoleCreate, RoleUpdate
 
 # List roles
 roles = permissio.api.roles.list()
+
+# Get a role
+role = permissio.api.roles.get("editor")
 
 # Create a role
 role = permissio.api.roles.create(RoleCreate(
@@ -169,32 +216,37 @@ role = permissio.api.roles.create(RoleCreate(
     name="Editor",
     permissions=["document:read", "document:write"],
 ))
-```
 
-### Role Assignments
+# Update a role
+role = permissio.api.roles.update("editor", RoleUpdate(name="Content Editor"))
 
-```python
-# Assign a role to a user
-permissio.api.role_assignments.assign(
-    user="user@example.com",
-    role="editor",
-    tenant="acme-corp",
-)
+# Delete a role
+permissio.api.roles.delete("editor")
 
-# Or use convenience method
-permissio.assign_role("user@example.com", "editor", tenant="acme-corp")
+# Sync role (upsert)
+permissio.api.roles.sync("editor", name="Editor", permissions=["document:read"])
 
-# Unassign a role
-permissio.unassign_role("user@example.com", "editor", tenant="acme-corp")
+# Permission management
+permissio.api.roles.add_permission("editor", "document:delete")
+permissio.api.roles.remove_permission("editor", "document:delete")
+permissions = permissio.api.roles.get_permissions("editor")
 
-# List role assignments
-assignments = permissio.api.role_assignments.list(user="user@example.com")
+# Role inheritance (extends)
+permissio.api.roles.add_extends("editor", "viewer")
+permissio.api.roles.remove_extends("editor", "viewer")
+extends = permissio.api.roles.get_extends("editor")
 ```
 
 ### Resources
 
 ```python
-from permissio.models import ResourceCreate, ResourceAction
+from permissio.models import ResourceCreate, ResourceAction, ResourceAttribute
+
+# List resources
+resources = permissio.api.resources.list()
+
+# Get a resource
+resource = permissio.api.resources.get("document")
 
 # Create a resource type
 resource = permissio.api.resources.create(ResourceCreate(
@@ -207,8 +259,66 @@ resource = permissio.api.resources.create(ResourceCreate(
     ],
 ))
 
-# List resources
-resources = permissio.api.resources.list()
+# Update / delete a resource type
+permissio.api.resources.update("document", ...)
+permissio.api.resources.delete("document")
+
+# Sync resource type (upsert)
+permissio.api.resources.sync("document", name="Document")
+
+# Action management
+actions = permissio.api.resources.list_actions("document")
+permissio.api.resources.create_action("document", ResourceAction(key="share", name="Share"))
+permissio.api.resources.delete_action("document", "share")
+
+# Attribute management
+attributes = permissio.api.resources.list_attributes("document")
+permissio.api.resources.create_attribute("document", ResourceAttribute(key="classification", type="string"))
+permissio.api.resources.delete_attribute("document", "classification")
+```
+
+### Role Assignments
+
+```python
+from permissio.models import RoleAssignmentCreate
+
+# Assign a role to a user
+permissio.api.role_assignments.assign(
+    user="user@example.com",
+    role="editor",
+    tenant="acme-corp",
+)
+
+# Unassign a role (optionally scoped to a resource instance)
+permissio.api.role_assignments.unassign(
+    user="user@example.com",
+    role="editor",
+    tenant="acme-corp",
+    resource_instance="document:doc-123",
+)
+
+# Convenience methods on the top-level client
+permissio.assign_role("user@example.com", "editor", tenant="acme-corp")
+permissio.unassign_role("user@example.com", "editor", tenant="acme-corp")
+
+# List role assignments (with filters)
+assignments = permissio.api.role_assignments.list(
+    user="user@example.com",
+    tenant="acme-corp",
+)
+
+# List with detailed user/role information
+detailed = permissio.api.role_assignments.list_detailed(user="user@example.com")
+
+# Bulk operations
+permissio.api.role_assignments.bulk_assign([
+    RoleAssignmentCreate(user="alice@example.com", role="editor", tenant="acme-corp"),
+    RoleAssignmentCreate(user="bob@example.com", role="viewer", tenant="acme-corp"),
+])
+
+permissio.api.role_assignments.bulk_unassign([
+    RoleAssignmentCreate(user="alice@example.com", role="editor", tenant="acme-corp"),
+])
 ```
 
 ## Configuration
@@ -216,7 +326,7 @@ resources = permissio.api.resources.list()
 ### Using ConfigBuilder
 
 ```python
-from permissio import ConfigBuilder
+from permissio import ConfigBuilder, Permissio
 
 config = (
     ConfigBuilder("permis_key_your_api_key")
@@ -238,8 +348,8 @@ permissio = Permissio(config=config)
 |--------|------|---------|-------------|
 | `token` | str | (required) | API key starting with `permis_key_` |
 | `api_url` | str | `https://api.permissio.io` | Base API URL |
-| `project_id` | str | None | Project identifier |
-| `environment_id` | str | None | Environment identifier |
+| `project_id` | str | None | Project identifier (auto-detected from token if omitted) |
+| `environment_id` | str | None | Environment identifier (auto-detected from token if omitted) |
 | `timeout` | float | 30.0 | Request timeout in seconds |
 | `debug` | bool | False | Enable debug logging |
 | `retry_attempts` | int | 3 | Number of retry attempts |
@@ -250,54 +360,76 @@ permissio = Permissio(config=config)
 
 ```python
 from permissio.errors import (
-    PermisError,
-    PermisApiError,
-    PermisNotFoundError,
-    PermisAuthenticationError,
+    PermissioError,
+    PermissioApiError,
+    PermissioNotFoundError,
+    PermissioAuthenticationError,
+    PermissioPermissionError,
+    PermissioRateLimitError,
+    PermissioNetworkError,
+    PermissioTimeoutError,
+    PermissioConflictError,
+    PermissioValidationError,
 )
 
 try:
     user = permissio.api.users.get("nonexistent@example.com")
-except PermisNotFoundError as e:
+except PermissioNotFoundError as e:
     print(f"User not found: {e.message}")
-except PermisAuthenticationError as e:
+except PermissioAuthenticationError as e:
     print(f"Authentication failed: {e.message}")
-except PermisApiError as e:
+except PermissioRateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after}s")
+except PermissioApiError as e:
     print(f"API error: {e.message} (status: {e.status_code})")
-except PermisError as e:
+except PermissioError as e:
     print(f"SDK error: {e.message}")
 ```
+
+### Error hierarchy
+
+```
+PermissioError
+├── PermissioValidationError
+├── PermissioNetworkError
+│   └── PermissioTimeoutError
+└── PermissioApiError
+    ├── PermissioAuthenticationError   (401)
+    ├── PermissioPermissionError       (403)
+    ├── PermissioNotFoundError         (404)
+    ├── PermissioConflictError         (409)
+    └── PermissioRateLimitError        (429)
+```
+
+`PermissioApiError` exposes convenience properties: `.is_not_found`, `.is_unauthorized`, `.is_forbidden`, `.is_bad_request`, `.is_conflict`, `.is_server_error`, `.is_retryable`.
 
 ## Context Manager
 
 ```python
-# Automatically closes the client
-with Permis(token="permis_key_your_api_key") as permis:
+# Sync context manager — automatically closes the client
+with Permissio(token="permis_key_your_api_key") as permissio:
     allowed = permissio.check("user@example.com", "read", "document")
 
 # Async context manager
-async with Permis(token="permis_key_your_api_key") as permis:
+async with Permissio(token="permis_key_your_api_key") as permissio:
     allowed = await permissio.check_async("user@example.com", "read", "document")
 ```
 
 ## Flask Integration
 
 ```python
-from flask import Flask, g, request
+from functools import wraps
+from flask import Flask, g, abort
 from permissio import Permissio
 
 app = Flask(__name__)
-permissio = Permissio(
-    token="permis_key_your_api_key",
-    project_id="your-project-id",
-    environment_id="your-environment-id",
-)
+permissio = Permissio(token="permis_key_your_api_key")
 
 def require_permission(action: str, resource: str):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            user_id = g.user.id  # Get from your auth system
+            user_id = g.user.id  # From your auth system
             if not permissio.check(user_id, action, resource):
                 abort(403)
             return f(*args, **kwargs)
