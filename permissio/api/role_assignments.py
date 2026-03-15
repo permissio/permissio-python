@@ -186,17 +186,17 @@ class RoleAssignmentsApi(BaseApiClient):
             tenant: The tenant key (optional).
             resource_instance: The resource instance key (optional).
         """
-        params: Dict[str, Any] = {
+        body: Dict[str, Any] = {
             "user": user,
             "role": role,
         }
         if tenant:
-            params["tenant"] = tenant
+            body["tenant"] = tenant
         if resource_instance:
-            params["resource_instance"] = resource_instance
+            body["resource_instance"] = resource_instance
 
         url = self._build_facts_url("role_assignments")
-        self.request("DELETE", url, params=params)
+        self.request("DELETE", url, json=body)
 
     async def unassign_async(
         self,
@@ -215,17 +215,17 @@ class RoleAssignmentsApi(BaseApiClient):
             tenant: The tenant key (optional).
             resource_instance: The resource instance key (optional).
         """
-        params: Dict[str, Any] = {
+        body: Dict[str, Any] = {
             "user": user,
             "role": role,
         }
         if tenant:
-            params["tenant"] = tenant
+            body["tenant"] = tenant
         if resource_instance:
-            params["resource_instance"] = resource_instance
+            body["resource_instance"] = resource_instance
 
         url = self._build_facts_url("role_assignments")
-        await self.request_async("DELETE", url, params=params)
+        await self.request_async("DELETE", url, json=body)
 
     def bulk_assign(self, assignments: List[Union[RoleAssignmentCreate, Dict[str, Any]]]) -> List[RoleAssignmentRead]:
         """

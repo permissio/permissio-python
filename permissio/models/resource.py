@@ -163,7 +163,16 @@ class ResourceCreate:
         if self.description is not None:
             data["description"] = self.description
         if self.actions:
-            data["actions"] = [a.to_dict() for a in self.actions]
+            # Backend expects actions as a map: {"read": {"name": "Read"}}
+            actions_map: Dict[str, Any] = {}
+            for a in self.actions:
+                action_val: Dict[str, Any] = {}
+                if a.name is not None:
+                    action_val["name"] = a.name
+                if a.description is not None:
+                    action_val["description"] = a.description
+                actions_map[a.key] = action_val
+            data["actions"] = actions_map
         if self.attributes:
             data["attributes"] = [a.to_dict() for a in self.attributes]
         if self.urn is not None:
@@ -198,7 +207,16 @@ class ResourceUpdate:
         if self.description is not None:
             data["description"] = self.description
         if self.actions is not None:
-            data["actions"] = [a.to_dict() for a in self.actions]
+            # Backend expects actions as a map: {"read": {"name": "Read"}}
+            actions_map: Dict[str, Any] = {}
+            for a in self.actions:
+                action_val: Dict[str, Any] = {}
+                if a.name is not None:
+                    action_val["name"] = a.name
+                if a.description is not None:
+                    action_val["description"] = a.description
+                actions_map[a.key] = action_val
+            data["actions"] = actions_map
         if self.attributes is not None:
             data["attributes"] = [a.to_dict() for a in self.attributes]
         if self.urn is not None:

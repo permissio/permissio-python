@@ -232,9 +232,10 @@ class UsersApi(BaseApiClient):
         if isinstance(user, UserSync):
             user_data = user.to_dict()
         else:
-            user_data = user
+            user_data = dict(user)
 
-        url = self._build_facts_url("users")
+        user_key = user_data.get("key", "")
+        url = self._build_facts_url(f"users/{user_key}")
         response = self.put(url, json=user_data)
         return UserRead.from_dict(response.json())
 
@@ -251,9 +252,10 @@ class UsersApi(BaseApiClient):
         if isinstance(user, UserSync):
             user_data = user.to_dict()
         else:
-            user_data = user
+            user_data = dict(user)
 
-        url = self._build_facts_url("users")
+        user_key = user_data.get("key", "")
+        url = self._build_facts_url(f"users/{user_key}")
         response = await self.put_async(url, json=user_data)
         return UserRead.from_dict(response.json())
 
@@ -334,17 +336,17 @@ class UsersApi(BaseApiClient):
             tenant: The tenant key (optional).
             resource_instance: The resource instance key (optional).
         """
-        params: Dict[str, Any] = {
+        body: Dict[str, Any] = {
             "user": user_key,
             "role": role,
         }
         if tenant:
-            params["tenant"] = tenant
+            body["tenant"] = tenant
         if resource_instance:
-            params["resource_instance"] = resource_instance
+            body["resource_instance"] = resource_instance
 
         url = self._build_facts_url("role_assignments")
-        self.request("DELETE", url, params=params)
+        self.request("DELETE", url, json=body)
 
     async def unassign_role_async(
         self,
@@ -363,17 +365,17 @@ class UsersApi(BaseApiClient):
             tenant: The tenant key (optional).
             resource_instance: The resource instance key (optional).
         """
-        params: Dict[str, Any] = {
+        body: Dict[str, Any] = {
             "user": user_key,
             "role": role,
         }
         if tenant:
-            params["tenant"] = tenant
+            body["tenant"] = tenant
         if resource_instance:
-            params["resource_instance"] = resource_instance
+            body["resource_instance"] = resource_instance
 
         url = self._build_facts_url("role_assignments")
-        await self.request_async("DELETE", url, params=params)
+        await self.request_async("DELETE", url, json=body)
 
     def get_roles(self, user_key: str, *, tenant: Optional[str] = None) -> List[RoleAssignment]:
         """
