@@ -118,11 +118,11 @@ class RoleAssignmentRead:
         return cls(
             id=data.get("id", ""),
             user_id=data.get("user_id", data.get("userId", "")),
-            user_key=data.get("user_key", data.get("userKey", "")),
+            user_key=data.get("user_key", data.get("userKey", data.get("user", ""))),
             role_id=data.get("role_id", data.get("roleId", "")),
-            role_key=data.get("role_key", data.get("roleKey", "")),
+            role_key=data.get("role_key", data.get("roleKey", data.get("role", ""))),
             tenant_id=data.get("tenant_id", data.get("tenantId")),
-            tenant_key=data.get("tenant_key", data.get("tenantKey")),
+            tenant_key=data.get("tenant_key", data.get("tenantKey", data.get("tenant"))),
             resource_instance=data.get("resource_instance", data.get("resourceInstance")),
             created_at=parse_datetime(data.get("created_at", data.get("createdAt"))),
         )

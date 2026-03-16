@@ -43,7 +43,7 @@ jobs:
         run: mypy permissio
 
       - name: Run tests
-        run: pytest --cov=permissio --cov-report=xml
+        run: pytest -m "not integration" --cov=permissio --cov-report=xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

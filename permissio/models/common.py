@@ -56,12 +56,18 @@ class PaginatedResponse(Generic[T]):
         Create a PaginatedResponse from a dictionary.
 
         Args:
-            data: The response dictionary.
+            data: The response dictionary (or a plain list if the API returns one).
             item_factory: A callable to create items from dictionaries.
 
         Returns:
             A PaginatedResponse instance.
         """
+        # Some endpoints return a plain list rather than a paginated dict
+        if isinstance(data, list):
+            items = [item_factory(item) for item in data]
+            pagination = Pagination(page=1, per_page=len(items), total=len(items), total_pages=1)
+            return cls(data=items, pagination=pagination)
+
         items = [item_factory(item) for item in data.get("data", [])]
 
         # Handle both nested pagination object and flat response with total_count/page_count
