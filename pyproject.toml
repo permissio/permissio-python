@@ -77,6 +77,9 @@ permissio = ["py.typed"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --cov=permissio --cov-report=term-missing"
+markers = [
+    "integration: marks tests as integration tests that require a live backend (deselect with '-m not integration')",
+]
 
 [tool.mypy]
 python_version = "3.9"

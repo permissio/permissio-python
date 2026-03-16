@@ -17,6 +17,8 @@ import pytest
 from permissio import Permissio
 from permissio.models.resource import ResourceAction, ResourceCreate
 
+pytestmark = pytest.mark.integration
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
